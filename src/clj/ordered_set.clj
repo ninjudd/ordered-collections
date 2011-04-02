@@ -1,5 +1,4 @@
-(ns ordered-set
-  (:import [clojure.lang PersistentOrderedSet]))
+(ns ordered-set)
 
 (defn ordered-set [& items]
   (clojure.lang.PersistentOrderedSet/create items))
