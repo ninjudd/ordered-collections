@@ -13,6 +13,7 @@ public class PersistentOrderedSet extends AFn
 static public final PersistentOrderedSet EMPTY =
   new PersistentOrderedSet(null, PersistentHashSet.EMPTY, PersistentVector.EMPTY);
 
+int _hash = -1;
 final IPersistentMap   _meta;
 final IPersistentSet   items;
 final IPersistentVector order;
@@ -103,16 +104,27 @@ public Object invoke(Object arg1) throws Exception{
 }
 
 public boolean equals(Object obj){
-  if (this == obj) return true;
   if (!(obj instanceof Set)) return false;
   Set s = (Set) obj;
 
-  if (s.size() != count()) return false;
+  if (s.size() != count() || s.hashCode() != hashCode()) return false;
   return containsAll(s);
 }
 
 public boolean equiv(Object obj){
   return equals(obj);
+}
+
+public int hashCode(){
+  if (_hash == -1) {
+    int hash = 0;
+    for(ISeq s = seq(); s != null; s = s.next()) {
+      Object e = s.first();
+      hash += Util.hash(e);
+    }
+    this._hash = hash;
+  }
+  return _hash;
 }
 
 public Object[] toArray(){
