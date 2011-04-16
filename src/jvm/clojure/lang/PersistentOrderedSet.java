@@ -14,8 +14,8 @@ static public final PersistentOrderedSet EMPTY =
   new PersistentOrderedSet(null, PersistentHashSet.EMPTY, PersistentVector.EMPTY);
 
 int _hash = -1;
-final IPersistentMap   _meta;
-final IPersistentSet   items;
+final IPersistentMap    _meta;
+final IPersistentSet    items;
 final IPersistentVector order;
 
 protected PersistentOrderedSet(IPersistentMap meta, IPersistentSet items, IPersistentVector order) {
@@ -36,9 +36,8 @@ public IPersistentSet disjoin(Object item) throws Exception{
   if (!contains(item)) return this;
 
   PersistentVector.TransientVector new_order = PersistentVector.EMPTY.asTransient();
-  ISeq s = seq();
-  for (; s != null; s = s.next()) {
-    if (s.first() != item) new_order = new_order.conj(s.first());
+  for (ISeq s = seq(); s != null; s = s.next()) {
+    if (!Util.equiv(item, s.first())) new_order = new_order.conj(s.first());
   }
   return new PersistentOrderedSet(_meta, items.disjoin(item), new_order.persistent());
 }
@@ -211,15 +210,13 @@ static final class TransientOrderedSet extends AFn implements ITransientSet {
     ITransientSet set = items.disjoin(obj);
     if (set != items) items = set;
 
-    PersistentVector.TransientVector new_order = PersistentVector.EMPTY
-      .asTransient();
-    ISeq s = order.persistent().seq();
-    for (; s != null; s = s.next()) {
-      if (s.first() != obj) {
-        new_order = new_order.conj(s.first());
-      }
+    PersistentVector.TransientVector new_order = PersistentVector.EMPTY.asTransient();
+    int max = order.count();
+    for (int i = 0; i < max; i++) {
+      Object item = order.valAt(i);
+      if (!Util.equiv(item, obj)) new_order = new_order.conj(item);
     }
-    if (order != new_order) order = new_order;
+    order = new_order;
 
     return this;
   }
