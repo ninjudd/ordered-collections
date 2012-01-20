@@ -1,33 +1,34 @@
-package clojure.lang;
+package ordered_set.core;
 
+import clojure.lang.*;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-public class PersistentOrderedSet extends AFn
+public class OrderedSet extends AFn
   implements IObj, IEditableCollection, IPersistentSet, Counted, IFn, IMeta, IPersistentCollection,
              Seqable, Serializable, Iterable, Runnable, Collection, Callable, Set {
 
-static public final PersistentOrderedSet EMPTY =
-  new PersistentOrderedSet(null, PersistentHashSet.EMPTY, PersistentVector.EMPTY);
+static public final OrderedSet EMPTY =
+  new OrderedSet(null, PersistentHashSet.EMPTY, PersistentVector.EMPTY);
 
 int _hash = -1;
-final IPersistentMap    _meta;
-final IPersistentSet    items;
-final IPersistentVector order;
+final IPersistentMap        _meta;
+final IPersistentSet        items;
+final IPersistentCollection order;
 
-protected PersistentOrderedSet(IPersistentMap meta, IPersistentSet items, IPersistentVector order) {
+protected OrderedSet(IPersistentMap meta, IPersistentSet items, IPersistentCollection order) {
   this._meta = meta;
   this.items = items;
   this.order = order;
 }
 
-static public PersistentOrderedSet create(ISeq items){
-  PersistentOrderedSet set = EMPTY;
+static public OrderedSet create(ISeq items){
+  OrderedSet set = EMPTY;
   for(; items != null; items = items.next()) {
-    set = (PersistentOrderedSet) set.cons(items.first());
+    set = (OrderedSet) set.cons(items.first());
   }
   return set;
 }
@@ -35,24 +36,24 @@ static public PersistentOrderedSet create(ISeq items){
 public IPersistentSet disjoin(Object item) throws Exception{
   if (!contains(item)) return this;
 
-  PersistentVector.TransientVector new_order = PersistentVector.EMPTY.asTransient();
+  ITransientVector new_order = PersistentVector.EMPTY.asTransient();
   for (ISeq s = seq(); s != null; s = s.next()) {
-    if (!Util.equiv(item, s.first())) new_order = new_order.conj(s.first());
+    if (!Util.equiv(item, s.first())) new_order = (ITransientVector) new_order.conj(s.first());
   }
-  return new PersistentOrderedSet(_meta, items.disjoin(item), new_order.persistent());
+  return new OrderedSet(_meta, items.disjoin(item), new_order.persistent());
 }
 
 public IPersistentSet cons(Object item){
   if (contains(item)) return this;
-  return new PersistentOrderedSet(_meta, (IPersistentSet) items.cons(item), order.cons(item));
+  return new OrderedSet(_meta, (IPersistentSet) items.cons(item), order.cons(item));
 }
 
 public IPersistentCollection empty(){
   return EMPTY.withMeta(meta());
 }
 
-public PersistentOrderedSet withMeta(IPersistentMap meta){
-  return new PersistentOrderedSet(meta, items, order);
+public OrderedSet withMeta(IPersistentMap meta){
+  return new OrderedSet(meta, items, order);
 }
 
 public IPersistentMap meta(){
@@ -179,7 +180,7 @@ static final class TransientOrderedSet extends AFn implements ITransientSet {
   }
 
   public IPersistentSet persistent() {
-    return new PersistentOrderedSet(null, (IPersistentSet) items.persistent(), (IPersistentVector) order.persistent());
+    return new OrderedSet(null, (IPersistentSet) items.persistent(), (IPersistentVector) order.persistent());
   }
 
   public ITransientSet conj(Object obj) {
@@ -210,11 +211,11 @@ static final class TransientOrderedSet extends AFn implements ITransientSet {
     ITransientSet set = items.disjoin(obj);
     if (set != items) items = set;
 
-    PersistentVector.TransientVector new_order = PersistentVector.EMPTY.asTransient();
+    ITransientVector new_order = PersistentVector.EMPTY.asTransient();
     int max = order.count();
     for (int i = 0; i < max; i++) {
       Object item = order.valAt(i);
-      if (!Util.equiv(item, obj)) new_order = new_order.conj(item);
+      if (!Util.equiv(item, obj)) new_order = (ITransientVector) new_order.conj(item);
     }
     order = new_order;
 

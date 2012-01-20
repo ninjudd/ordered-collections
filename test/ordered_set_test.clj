@@ -1,5 +1,5 @@
 (ns ordered-set-test
-  (:use ordered-set)
+  (:use ordered-set.core)
   (:use clojure.test))
 
 (deftest test-ordered-set
