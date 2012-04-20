@@ -5,3 +5,8 @@ pom.xml
 lib
 classes
 build
+.classpath
+.lein*
+.project
+.settings
+bin
