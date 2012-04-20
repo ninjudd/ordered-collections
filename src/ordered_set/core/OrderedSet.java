@@ -1,11 +1,31 @@
 package ordered_set.core;
 
-import clojure.lang.*;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
+
+import clojure.lang.AFn;
+import clojure.lang.Counted;
+import clojure.lang.IEditableCollection;
+import clojure.lang.IFn;
+import clojure.lang.IMeta;
+import clojure.lang.IObj;
+import clojure.lang.IPersistentCollection;
+import clojure.lang.IPersistentMap;
+import clojure.lang.IPersistentSet;
+import clojure.lang.IPersistentVector;
+import clojure.lang.ISeq;
+import clojure.lang.ITransientCollection;
+import clojure.lang.ITransientSet;
+import clojure.lang.ITransientVector;
+import clojure.lang.PersistentHashSet;
+import clojure.lang.PersistentVector;
+import clojure.lang.RT;
+import clojure.lang.SeqIterator;
+import clojure.lang.Seqable;
+import clojure.lang.Util;
 
 
 public class OrderedSet extends AFn implements IObj, IEditableCollection, IPersistentSet, Counted,
