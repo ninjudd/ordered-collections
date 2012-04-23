@@ -18,11 +18,12 @@ import clojure.lang.ITransientVector;
 import clojure.lang.Obj;
 import clojure.lang.PersistentHashMap;
 import clojure.lang.PersistentVector;
+import clojure.lang.Reversible;
 import clojure.lang.SeqIterator;
 import clojure.lang.Util;
 
 
-public class OrderedMap extends APersistentMap implements IEditableCollection, IObj {
+public class OrderedMap extends APersistentMap implements IEditableCollection, IObj, Reversible {
   public final IPersistentMap mappings;
   public final IPersistentVector order;
   public final IPersistentMap meta;
@@ -54,7 +55,12 @@ public class OrderedMap extends APersistentMap implements IEditableCollection, I
       return this;
     }
 
-    return new OrderedMap(newMappings, order.cons(key), meta);
+    IPersistentVector newOrder = order;
+    if (!mappings.containsKey(key)) {
+      newOrder = order.cons(key);
+    }
+
+    return new OrderedMap(newMappings, newOrder, meta);
   }
 
   @Override
@@ -101,46 +107,57 @@ public class OrderedMap extends APersistentMap implements IEditableCollection, I
     return EMPTY;
   }
 
-  @Override
-  public ISeq seq() {
-    class Seq extends ASeq {
-      private ISeq keys;
+  private class Seq extends ASeq {
+    private ISeq keys;
 
-      public Seq(ISeq keys, IPersistentMap meta) {
-        super(meta);
-        this.keys = keys;
-      }
-
-      @Override
-      public Object first() {
-        return mappings.entryAt(keys.first());
-      }
-
-      @Override
-      public ISeq next() {
-        ISeq more = keys.next();
-        if (more == null) {
-          return null;
-        }
-        return new Seq(more, meta);
-      }
-
-      @Override
-      public Obj withMeta(IPersistentMap meta) {
-        return new Seq(keys, meta);
-      }
+    public Seq(ISeq keys, IPersistentMap meta) {
+      super(meta);
+      this.keys = keys;
     }
 
-    ISeq keys = order.seq();
+    @Override
+    public Object first() {
+      return mappings.entryAt(keys.first());
+    }
+
+    @Override
+    public ISeq next() {
+      ISeq more = keys.next();
+      if (more == null) {
+        return null;
+      }
+      return new Seq(more, meta);
+    }
+
+    @Override
+    public Obj withMeta(IPersistentMap meta) {
+      return new Seq(keys, meta);
+    }
+  }
+
+  private ISeq doSeq(ISeq keys) {
     if (keys == null) {
       return null;
     }
     return new Seq(keys, null);
   }
 
+  @Override
+  public ISeq seq() {
+    return doSeq(order.seq());
+  }
+
+  @Override
+  public ISeq rseq() throws Exception {
+    return doSeq(order.rseq());
+  }
+
   public static void main(String[] args) {
-    OrderedMap m = OrderedMap.EMPTY;
-    ((ITransientMap)m.asTransient()).assoc(1, 2);
+    ISeq seq = OrderedMap.EMPTY.assoc(1, 2).seq();
+    while (seq != null) {
+      System.out.println(seq.first());
+      seq = seq.next();
+    }
   }
 
   private static class Transient implements ITransientMap {
@@ -177,8 +194,16 @@ public class OrderedMap extends APersistentMap implements IEditableCollection, I
       if (val == null) {
         return this;
       }
-      Map.Entry<?, ?> e = (Entry<?, ?>)val;
-      return assoc(e.getKey(), e.getValue());
+
+      if (val instanceof Map.Entry) {
+        Map.Entry<?, ?> e = (Entry<?, ?>)val;
+        return assoc(e.getKey(), e.getValue());
+      } else if (val instanceof IPersistentVector) {
+        IPersistentVector v = (IPersistentVector)val;
+        return assoc(v.nth(0), v.nth(1));
+      }
+
+      throw new RuntimeException("Don't know how to conj " + val);
     }
 
     @Override
@@ -243,5 +268,4 @@ public class OrderedMap extends APersistentMap implements IEditableCollection, I
   public IObj withMeta(IPersistentMap meta) {
     return new OrderedMap(mappings, order, meta);
   }
-
 }
