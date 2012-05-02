@@ -1,7 +1,6 @@
 (ns ordered-map-test
   (:use clojure.test
-        [ordered-map.core :only [ordered-map]]
-        [ordered-collections.common :only [*print-ordered*]]))
+        [ordered-map.core :only [ordered-map]]))
 
 (deftest implementations
   (let [basic (ordered-map)]
@@ -110,10 +109,6 @@
            (merge m ())
            (into m ())))))
 
-(deftest object-features
-  (let [m (ordered-map 'a 1 :b 2)]
-    (is (= "{a 1, :b 2}" (str m)))))
-
 (deftest transient-support
   (let [m (ordered-map 1 2 7 8)]
     (testing "Basic transient conj!"
@@ -151,13 +146,9 @@
 
 (deftest print-and-read-ordered
   (let [s (ordered-map 1 2, 3 4, 5 6, 1 9, 7 8)]
-    (is (re-matches #"\{.*\}" (pr-str s)))
     (is (= "#ordered-collection/map ([1 9] [3 4] [5 6] [7 8])"
-           (binding [*print-ordered* true]
-             (pr-str s))))
-    (let [o (read-string
-             (binding [*print-ordered* true]
-               (pr-str s)))]
+           (pr-str s)))
+    (let [o (read-string (pr-str s))]
       (is (= ordered_map.core.OrderedMap (type o)))
       (is (= '([1 9] [3 4] [5 6] [7 8])
              (seq o))))))
