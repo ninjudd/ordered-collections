@@ -1,6 +1,7 @@
 (ns ordered-set-test
-  (:use ordered-set.core)
-  (:use clojure.test))
+  (:use clojure.test
+        [ordered-set.core :only [ordered-set]]
+        [ordered-collections.common :only [*print-ordered*]]))
 
 (deftest test-ordered-set
   (let [s (ordered-set 5 1 2 [:f])]
@@ -53,3 +54,15 @@
                   (recur (next a) (disj! os (first a)))
                   os))))))))
 
+(deftest print-and-read-ordered
+  (let [s (ordered-set 1 2 9 8 7 5)]
+    (is (re-matches #"#\{.*\}" (pr-str s)))
+    (is (= "#ordered-collection/set (1 2 9 8 7 5)"
+           (binding [*print-ordered* true]
+             (pr-str s))))
+    (let [o (read-string
+             (binding [*print-ordered* true]
+               (pr-str s)))]
+      (is (= ordered_set.core.OrderedSet (type o)))
+      (is (= '(1 2 9 8 7 5)
+             (seq o))))))

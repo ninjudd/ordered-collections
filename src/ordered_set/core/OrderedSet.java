@@ -54,7 +54,7 @@ public class OrderedSet extends AFn implements IObj, IEditableCollection, IPersi
   }
 
   @Override
-  public IPersistentSet disjoin(Object item) throws Exception {
+  public IPersistentSet disjoin(Object item) {
     if (!contains(item)) {
       return this;
     }
@@ -142,7 +142,7 @@ public class OrderedSet extends AFn implements IObj, IEditableCollection, IPersi
   }
 
   @Override
-  public Object invoke(Object arg1) throws Exception {
+  public Object invoke(Object arg1) {
     return get(arg1);
   }
 
@@ -279,7 +279,7 @@ public class OrderedSet extends AFn implements IObj, IEditableCollection, IPersi
     }
 
     @Override
-    public ITransientSet disjoin(Object obj) throws Exception {
+    public ITransientSet disjoin(Object obj) {
       if (!contains(obj)) {
         return this;
       }

@@ -64,7 +64,7 @@ public class OrderedMap extends APersistentMap implements IEditableCollection, I
   }
 
   @Override
-  public IPersistentMap assocEx(Object key, Object val) throws Exception {
+  public IPersistentMap assocEx(Object key, Object val) {
     if (this.containsKey(key)) {
       throw new RuntimeException("Key " + key + " already present");
     }
@@ -72,7 +72,7 @@ public class OrderedMap extends APersistentMap implements IEditableCollection, I
   }
 
   @Override
-  public IPersistentMap without(Object key) throws Exception {
+  public IPersistentMap without(Object key) {
     IPersistentMap newMappings = mappings.without(key);
     if (newMappings == mappings) {
       return this;
@@ -148,7 +148,7 @@ public class OrderedMap extends APersistentMap implements IEditableCollection, I
   }
 
   @Override
-  public ISeq rseq() throws Exception {
+  public ISeq rseq() {
     return doSeq(order.rseq());
   }
 
